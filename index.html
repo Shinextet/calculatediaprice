@@ -514,6 +514,7 @@
                 contents: [{ parts: [{ text: prompt }] }]
             };
             
+            // FIXED: Changed 'systemPrompt' to 'systemInstruction' to resolve undefined error
             if (systemInstruction) {
                 payload.systemInstruction = { parts: [{ text: systemInstruction }] };
             }
