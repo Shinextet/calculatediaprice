@@ -6,8 +6,8 @@
     <title>Price & Profit Calculator Converter with Gemini AI</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Awesome Icons (Changed to jsDelivr CDN for better DNS resolution in Myanmar) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap');
         body {
@@ -44,7 +44,7 @@
             </p>
         </header>
 
-        <!-- API Key Setup Panel (New Feature) -->
+        <!-- API Key Setup Panel (AI Feature) -->
         <div class="bg-slate-800/80 border border-slate-700/60 p-4 rounded-xl mb-6 shadow-lg">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="flex items-center gap-2.5">
@@ -384,8 +384,8 @@
                 tableBody.innerHTML = `
                     <tr>
                         <td colspan="5" class="p-8 text-center text-slate-500">
-                            <i class="fa-solid fa-circle-exclamation block text-2xl mb-2 text-rose-500"></i>
-                            စနစ်မှ မဖတ်ရှုနိုင်ပါ။ စာသားပုံစံ မှန်ကန်စွာ (ဥပမာ: "11dia = 800") ရေးသွင်းပေးပါ။
+                            <i class="fa-solid fa-circle-info block text-2xl mb-2 text-slate-600"></i>
+                            အပေါ်တွင် စာရင်းထည့်ပြီး "တွက်ချက်မည်" ကို နှိပ်ပါ။
                         </td>
                     </tr>
                 `;
@@ -515,7 +515,7 @@
             };
             
             if (systemInstruction) {
-                payload.systemInstruction = { parts: [{ text: systemPrompt }] };
+                payload.systemInstruction = { parts: [{ text: systemInstruction }] };
             }
 
             let delay = 1000;
@@ -557,14 +557,14 @@
 
             setLoading(true, "✨ AI မှ စာသားများကို ဖတ်ရှုပြီး သန့်စင်နေပါသည်...");
 
-            const systemPrompt = "You are a professional game service shop data assistant. Your job is to extract item names/shortcuts and their corresponding numeric costs from messy text input. You must output ONLY standard lines in the format 'Shortcut = Cost'. Do not write any explanations, introduction, or greeting. Strictly return standard list lines.";
+            const systemInstructionText = "You are a professional game service shop data assistant. Your job is to extract item names/shortcuts and their corresponding numeric costs from messy text input. You must output ONLY standard lines in the format 'Shortcut = Cost'. Do not write any explanations, introduction, or greeting. Strictly return standard list lines.";
             const userPrompt = `Parse and clean the following text into a list where each line is strictly formatted as 'Shortcut = Price' (e.g. '11dia = 800', 'wp1 = 6250'). Ignore all greeting messages, bank details, telegram group links, or emojis.
             
 Text to parse:
 ${rawText}`;
 
             try {
-                const cleanedText = await callGemini(userPrompt, systemPrompt);
+                const cleanedText = await callGemini(userPrompt, systemInstructionText);
                 if (cleanedText && cleanedText.trim()) {
                     document.getElementById("rawInput").value = cleanedText.trim();
                     processInput(); // Re-trigger calculations
@@ -598,7 +598,7 @@ ${rawText}`;
             // Generate lists string
             const itemsString = calculatedItems.map(item => `${item.shortcut} - ${item.sellPrice} Ks`).join('\n');
 
-            const systemPrompt = `You are an expert copywriter for Mobile Legends and game top-up shops in Myanmar. You write highly engaging, professional, and visually appealing posts in Burmese language for Telegram and Facebook. 
+            const systemInstructionText = `You are an expert copywriter for Mobile Legends and game top-up shops in Myanmar. You write highly engaging, professional, and visually appealing posts in Burmese language for Telegram and Facebook. 
 
 CRITICAL DIRECTIONS:
 1. STRICTLY use the exact prices provided in the list. Do NOT change, hallucinate, or calculate other prices.
@@ -614,7 +614,7 @@ Here is the price list to use:
 ${itemsString}`;
 
             try {
-                const postContent = await callGemini(userPrompt, systemPrompt);
+                const postContent = await callGemini(userPrompt, systemInstructionText);
                 if (postContent) {
                     document.getElementById("aiOutputArea").classList.remove("hidden");
                     document.getElementById("aiTextResult").value = postContent.trim();
