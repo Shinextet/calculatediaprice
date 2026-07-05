@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price & Profit Calculator Converter</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap');
+        body {
+            font-family: 'Padauk', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between pb-8">
+
+    <div class="container mx-auto px-4 py-6 max-w-5xl">
+        <!-- Header -->
+        <header class="text-center mb-6 border-b border-slate-800 pb-4">
+            <h1 class="text-2xl md:text-3xl font-bold text-teal-400 mb-2">
+                <i class="fa-solid fa-calculator-combined mr-2"></i> Auto Price & Profit Calculator
+            </h1>
+            <p class="text-slate-400 text-sm">
+                Supplier ပေးသောဈေးနှုန်းကို Paste ချရုံဖြင့် အမြတ်တွက်ပြီး ပြန်ရောင်းဈေး format သို့ အလိုအလျောက် ပြောင်းလဲပေးသည်။
+            </p>
+        </header>
+
+        <!-- Rule & Dynamic Profit % Settings Banner -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <!-- Weekly Pass Settings -->
+            <div class="bg-teal-950/40 border border-teal-800/60 p-4 rounded-xl flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-teal-500 text-slate-900 rounded-lg h-12 w-16 flex flex-col items-center justify-center font-bold shadow-lg">
+                        <span class="text-xs font-normal">အမြတ်</span>
+                        <div class="flex items-center">
+                            <input type="number" id="weeklyRate" value="1" min="0" max="100" step="0.1"
+                                   class="w-10 bg-transparent text-center font-bold text-lg focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                   oninput="processInput()">
+                            <span class="text-sm">%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-teal-400 text-sm">Weekly Pass အမျိုးအစားများ</h3>
+                        <p class="text-xs text-slate-300">Weekly, Ewpk, Emp, wp1 - wp9 စသည့် အမြတ်နှုန်း</p>
+                    </div>
+                </div>
+                <!-- Mini controller buttons -->
+                <div class="flex flex-col gap-1">
+                    <button onclick="adjustRate('weeklyRate', 0.5)" class="bg-teal-900/80 hover:bg-teal-800 text-teal-300 text-xs px-2 py-0.5 rounded border border-teal-700/50">+</button>
+                    <button onclick="adjustRate('weeklyRate', -0.5)" class="bg-teal-900/80 hover:bg-teal-800 text-teal-300 text-xs px-2 py-0.5 rounded border border-teal-700/50">-</button>
+                </div>
+            </div>
+
+            <!-- Diamond & Other Settings -->
+            <div class="bg-indigo-950/40 border border-indigo-800/60 p-4 rounded-xl flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-indigo-500 text-slate-900 rounded-lg h-12 w-16 flex flex-col items-center justify-center font-bold shadow-lg">
+                        <span class="text-xs font-normal">အမြတ်</span>
+                        <div class="flex items-center">
+                            <input type="number" id="otherRate" value="2" min="0" max="100" step="0.1"
+                                   class="w-10 bg-transparent text-center font-bold text-lg focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                   oninput="processInput()">
+                            <span class="text-sm">%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-indigo-400 text-sm">MLBB Diamonds & အခြားများ</h3>
+                        <p class="text-xs text-slate-300">ကျန်ရှိသော Diamond နှင့် Game items အားလုံး၏ အမြတ်နှုန်း</p>
+                    </div>
+                </div>
+                <!-- Mini controller buttons -->
+                <div class="flex flex-col gap-1">
+                    <button onclick="adjustRate('otherRate', 0.5)" class="bg-indigo-900/80 hover:bg-indigo-800 text-indigo-300 text-xs px-2 py-0.5 rounded border border-indigo-700/50">+</button>
+                    <button onclick="adjustRate('otherRate', -0.5)" class="bg-indigo-900/80 hover:bg-indigo-800 text-indigo-300 text-xs px-2 py-0.5 rounded border border-indigo-700/50">-</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left Side: Paste Box (Inputs) -->
+            <div class="lg:col-span-5 bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl flex flex-col gap-4">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                    <h2 class="text-lg font-bold text-teal-300">
+                        <i class="fa-solid fa-paste mr-1"></i> Supplier စာရင်း Paste ချရန်
+                    </h2>
+                    <button onclick="clearInput()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded text-slate-300 transition-colors">
+                        <i class="fa-solid fa-trash-can mr-1"></i> ရှင်းလင်းရန်
+                    </button>
+                </div>
+                
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Supplier ဆီမှ Copy ကူးလာသော စာသားများကို အောက်တွင် ထည့်ပါ</label>
+                    <textarea id="rawInput" rows="12" placeholder="ဥပမာ-&#10;Weekly pass = 6250 Ks&#10;Ewpk - 3250 Ks&#10;11dia = 800&#10;86dia = 5050" 
+                              class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm font-mono text-emerald-300 focus:outline-none focus:border-teal-500 transition-colors placeholder:text-slate-600 custom-scrollbar"
+                              oninput="processInput()"></textarea>
+                </div>
+
+                <div>
+                    <button onclick="processInput()" class="w-full bg-teal-500 hover:bg-teal-600 text-slate-900 font-bold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> စျေးနှုန်းပြန်တွက်မည်
+                    </button>
+                </div>
+
+                <div class="text-slate-400 text-xs leading-relaxed bg-slate-900/60 p-3 rounded-lg border border-slate-700/50">
+                    <span class="font-bold text-amber-400">ဘယ်လိုအသုံးပြုမလဲ?</span><br>
+                    ၁။ အပေါ်ရှိ အမြတ် % ဘောက်စ်များတွင် မိမိထားချင်သော အမြတ်နှုန်းကို စိတ်ကြိုက်ပြောင်းလဲပါ။<br>
+                    ၂။ Telegram မှ ရလာသော ဈေးနှုန်းစာရင်းများကို ကူးယူပြီး အပေါ်ရှိ စာသားအကွက်ထဲတွင် ထည့်ပါ။<br>
+                    ၃။ ဈေးနှုန်းများကို အလိုအလျောက် တွက်ချက်ပေးမည်ဖြစ်ပြီး ညာဘက်ခြမ်းတွင် Format အသင့်အတိုင်း ကူးယူနိုင်ပါသည်။
+                </div>
+            </div>
+
+            <!-- Right Side: Calculated Outputs -->
+            <div class="lg:col-span-7 bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl flex flex-col min-h-[500px]">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-2 border-b border-slate-700">
+                    <h2 class="text-lg font-bold text-teal-300">
+                        <i class="fa-solid fa-square-poll-horizontal mr-1"></i> တွက်ချက်ပြီးသား ဈေးနှုန်းစာရင်း
+                    </h2>
+                    <div class="flex gap-2">
+                        <button onclick="copyAllOutputs()" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                            <i class="fa-solid fa-copy"></i> အားလုံး Copy ယူရန်
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Toast Notification for Copy -->
+                <div id="copyToast" class="hidden bg-emerald-500 text-white text-xs px-3 py-2 rounded-lg mb-3 flex items-center justify-between transition-all">
+                    <span id="toastMessage"><i class="fa-solid fa-circle-check mr-1"></i> ကူးယူပြီးပါပြီ။</span>
+                    <button onclick="hideToast()" class="text-white hover:text-slate-200"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <!-- Quick Output Toggles -->
+                <div class="flex gap-2 mb-3">
+                    <button id="btnSimpleFormat" onclick="switchOutputFormat('simple')" class="text-xs px-3 py-1 rounded bg-teal-500 text-slate-900 font-semibold transition-all">
+                        Simple (Shortcut - Price Ks)
+                    </button>
+                    <button id="btnProfitFormat" onclick="switchOutputFormat('profit')" class="text-xs px-3 py-1 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all">
+                        Profit Format (Shortcut-Sell_Price Ks = Profit Ks)
+                    </button>
+                </div>
+
+                <!-- Calculated Output Table / Text -->
+                <div class="overflow-y-auto flex-grow max-h-[420px] pr-1 custom-scrollbar">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-900 sticky top-0 text-slate-400 text-xs uppercase">
+                            <tr>
+                                <th class="p-3 rounded-l-lg">အမျိုးအမည်</th>
+                                <th class="p-3">ဝယ်ဈေး (အရင်း)</th>
+                                <th class="p-3 text-amber-400">တွက်ချက်ပြီး ရောင်းဈေး</th>
+                                <th class="p-3">အမြတ်</th>
+                                <th class="p-3 rounded-r-lg text-right">လုပ်ဆောင်ချက်</th>
+                            </tr>
+                        </thead>
+                        <tbody id="outputTableBody">
+                            <tr>
+                                <td colspan="5" class="p-8 text-center text-slate-500">
+                                    <i class="fa-solid fa-circle-info block text-2xl mb-2 text-slate-600"></i>
+                                    အပေါ်တွင် စာရင်းထည့်ပြီး "တွက်ချက်မည်" ကို နှိပ်ပါ။
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bottom contact info -->
+    <footer class="text-center text-xs text-slate-500 mt-6 flex flex-col items-center gap-1">
+        <div>App premium / Tg star & premium ဝယ်ယူရန် ဆက်သွယ်နိုင်ပါသည်။</div>
+        <a href="https://t.me/Toji222005" target="_blank" class="text-teal-500 hover:underline"><i class="fa-brands fa-telegram mr-1"></i>https://t.me/Toji222005</a>
+    </footer>
+
+    <script>
+        let calculatedItems = [];
+        let activeFormat = 'simple'; // 'simple' or 'profit'
+
+        // Utility to adjust rate using buttons (+ / -)
+        function adjustRate(inputId, delta) {
+            const input = document.getElementById(inputId);
+            let val = parseFloat(input.value) || 0;
+            val = Math.max(0, Math.min(100, val + delta));
+            // Keep decimal format clean
+            input.value = parseFloat(val.toFixed(2));
+            processInput();
+        }
+
+        // Check if an item is a weekly pass category
+        function isWeeklyPass(shortcut) {
+            const sc = shortcut.toLowerCase();
+            return sc.includes('weekly') || sc.includes('ewpk') || sc.includes('emp') || /^wp\d*$/.test(sc);
+        }
+
+        // Processing Input Text
+        function processInput() {
+            const rawText = document.getElementById("rawInput").value;
+            if (!rawText.trim()) {
+                calculatedItems = [];
+                renderResults();
+                return;
+            }
+
+            // Get live custom rates from the inputs
+            const weeklyPercentInput = parseFloat(document.getElementById("weeklyRate").value);
+            const otherPercentInput = parseFloat(document.getElementById("otherRate").value);
+
+            const weeklyProfitRate = isNaN(weeklyPercentInput) ? 0.01 : (weeklyPercentInput / 100);
+            const otherProfitRate = isNaN(otherPercentInput) ? 0.02 : (otherPercentInput / 100);
+
+            calculatedItems = [];
+            const lines = rawText.split('\n');
+
+            lines.forEach(line => {
+                const cleanedLine = line.trim();
+                if (!cleanedLine) return;
+
+                // RegEx to match key and price
+                const regex = /^([a-zA-Z0-9\s\+\-\.]+?)(?:\s*[=\-\:]\s*|\s+)(\d+)(?:\s*[KksS]*\s*)*$/i;
+                const match = cleanedLine.match(regex);
+
+                if (match) {
+                    const shortcut = match[1].trim();
+                    const originalPrice = parseInt(match[2]);
+
+                    if (!isNaN(originalPrice) && originalPrice > 0) {
+                        let profitRate = otherProfitRate; // custom default
+                        let categoryName = "mlbb_diamond";
+
+                        if (isWeeklyPass(shortcut)) {
+                            profitRate = weeklyProfitRate; // custom weekly
+                            categoryName = "weekly_pass";
+                        }
+
+                        // Calculate Profit
+                        let rawProfit = originalPrice * profitRate;
+                        
+                        // Keep profit integer
+                        let profit = Math.ceil(rawProfit);
+
+                        // Sell Price = Original + Profit
+                        let sellPrice = originalPrice + profit;
+
+                        // Round Up to nearest 50 Ks for clean selling prices
+                        let remainder = sellPrice % 50;
+                        if (remainder > 0) {
+                            sellPrice += (50 - remainder);
+                        }
+                        
+                        // Recalculate profit based on final rounded sell price
+                        profit = sellPrice - originalPrice;
+
+                        calculatedItems.push({
+                            shortcut: shortcut,
+                            originalPrice: originalPrice,
+                            sellPrice: sellPrice,
+                            profit: profit,
+                            category: categoryName
+                        });
+                    }
+                }
+            });
+
+            renderResults();
+        }
+
+        // Show/Render results on the table
+        function renderResults() {
+            const tableBody = document.getElementById("outputTableBody");
+            tableBody.innerHTML = "";
+
+            if (calculatedItems.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="p-8 text-center text-slate-500">
+                            <i class="fa-solid fa-circle-exclamation block text-2xl mb-2 text-rose-500"></i>
+                            စနစ်မှ မဖတ်ရှုနိုင်ပါ။ စာသားပုံစံ မှန်ကန်စွာ (ဥပမာ: "11dia = 800") ရေးသွင်းပေးပါ။
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            calculatedItems.forEach((item, index) => {
+                const simpleFormatText = `${item.shortcut} - ${item.sellPrice} Ks`;
+                const profitFormatText = `"${item.shortcut}"-"${item.sellPrice} Ks" = "${item.profit} Ks"`;
+                const displayFormat = activeFormat === 'simple' ? simpleFormatText : profitFormatText;
+
+                const row = document.createElement("tr");
+                row.className = "border-b border-slate-700/50 hover:bg-slate-700/40 cursor-pointer transition-colors";
+                row.onclick = () => {
+                    copyToClipboard(displayFormat);
+                    showToast(`"${displayFormat}" ကူးယူပြီးပါပြီ!`);
+                };
+
+                row.innerHTML = `
+                    <td class="p-3 font-semibold ${item.category === 'weekly_pass' ? 'text-teal-400' : 'text-indigo-400'}">${item.shortcut}</td>
+                    <td class="p-3 text-slate-400">${item.originalPrice} Ks</td>
+                    <td class="p-3 font-bold text-amber-400">${item.sellPrice} Ks</td>
+                    <td class="p-3 text-emerald-400">+${item.profit} Ks</td>
+                    <td class="p-3 text-right">
+                        <span class="inline-flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-teal-500 text-xs font-mono px-3 py-1.5 rounded-lg text-slate-300 transition-all">
+                            <code>${displayFormat}</code>
+                            <i class="fa-regular fa-copy text-teal-400"></i>
+                        </span>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Toggle Output styles
+        function switchOutputFormat(format) {
+            activeFormat = format;
+            const btnSimple = document.getElementById("btnSimpleFormat");
+            const btnProfit = document.getElementById("btnProfitFormat");
+
+            if (format === 'simple') {
+                btnSimple.className = "text-xs px-3 py-1 rounded bg-teal-500 text-slate-900 font-semibold transition-all";
+                btnProfit.className = "text-xs px-3 py-1 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all";
+            } else {
+                btnSimple.className = "text-xs px-3 py-1 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all";
+                btnProfit.className = "text-xs px-3 py-1 rounded bg-teal-500 text-slate-900 font-semibold transition-all";
+            }
+            if (calculatedItems.length > 0) {
+                renderResults();
+            }
+        }
+
+        // Copy everything to Clipboard
+        function copyAllOutputs() {
+            if (calculatedItems.length === 0) {
+                showToast("ကူးယူရန် ဈေးနှုန်းစာရင်းမရှိသေးပါ!", true);
+                return;
+            }
+
+            const allTexts = calculatedItems.map(item => {
+                if (activeFormat === 'simple') {
+                    return `${item.shortcut} - ${item.sellPrice} Ks`;
+                } else {
+                    return `"${item.shortcut}"-"${item.sellPrice} Ks" = "${item.profit} Ks"`;
+                }
+            }).join('\n');
+
+            copyToClipboard(allTexts);
+            showToast("စာရင်းအားလုံးကို Clipboard သို့ ကူးယူပြီးပါပြီ!");
+        }
+
+        // Core Copy Function
+        function copyToClipboard(text) {
+            const tempInput = document.createElement("textarea");
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+        }
+
+        // Toast notifications
+        function showToast(message, isError = false) {
+            const toast = document.getElementById("copyToast");
+            const toastMsg = document.getElementById("toastMessage");
+            
+            toast.className = isError 
+                ? "bg-rose-600 text-white text-xs px-3 py-2 rounded-lg mb-3 flex items-center justify-between transition-all"
+                : "bg-emerald-500 text-white text-xs px-3 py-2 rounded-lg mb-3 flex items-center justify-between transition-all";
+
+            toastMsg.innerHTML = isError 
+                ? `<i class="fa-solid fa-circle-exclamation mr-1"></i> ${message}`
+                : `<i class="fa-solid fa-circle-check mr-1"></i> ${message}`;
+
+            toast.classList.remove("hidden");
+            
+            // Auto hide after 3.5s
+            if (window.toastTimeout) clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => {
+                hideToast();
+            }, 3500);
+        }
+
+        function hideToast() {
+            document.getElementById("copyToast").classList.add("hidden");
+        }
+
+        function clearInput() {
+            document.getElementById("rawInput").value = "";
+            calculatedItems = [];
+            renderResults();
+        }
+    </script>
+</body>
+</html>
