@@ -44,6 +44,34 @@
             </p>
         </header>
 
+        <!-- API Key Setup Panel (New Feature) -->
+        <div class="bg-slate-800/80 border border-slate-700/60 p-4 rounded-xl mb-6 shadow-lg">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="bg-purple-500/15 p-2 rounded-lg border border-purple-500/30">
+                        <i class="fa-solid fa-key text-purple-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-200">Gemini API Key သတ်မှတ်ရန်</h3>
+                        <p class="text-[11px] text-slate-400">AI စနစ်များကို အသုံးပြုရန် သင်၏ကိုယ်ပိုင် Gemini API Key ကို ထည့်သွင်းပေးပါ။</p>
+                    </div>
+                </div>
+                <div class="flex flex-1 sm:max-w-md gap-2">
+                    <input type="password" id="userApiKey" placeholder="AI သုံးရန် API Key ရိုက်ထည့်ပါ..." 
+                           class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-purple-500 placeholder:text-slate-600 transition-colors">
+                    <button onclick="saveApiKey()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                        <i class="fa-solid fa-floppy-disk"></i> Save
+                    </button>
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1.5 rounded-lg flex items-center justify-center gap-1" title="API Key အခမဲ့ ရယူရန်">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Get Free Key
+                    </a>
+                </div>
+            </div>
+            <div id="keyStatus" class="hidden text-[10px] mt-2 text-emerald-400 flex items-center gap-1">
+                <i class="fa-solid fa-circle-check"></i> API Key ကို သင့် Browser Memory တွင် သိမ်းဆည်းထားပြီးပါပြီ။ AI စနစ်များကို အသုံးပြုနိုင်ပါပြီ။
+            </div>
+        </div>
+
         <!-- Rule & Dynamic Profit % Settings Banner -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <!-- Weekly Pass Settings -->
@@ -232,12 +260,35 @@
     <!-- Bottom contact info -->
     <footer class="text-center text-xs text-slate-500 mt-6 flex flex-col items-center gap-1">
         <div>App premium / Tg star & premium ဝယ်ယူရန် ဆက်သွယ်နိုင်ပါသည်။</div>
-        <a href="https://t.me/Toji222005" target="_blank" class="text-teal-500 hover:underline"><i class="fa-brands fa-telegram mr-1"></i>https://t.me/Toji222005</a>
+        <a href="https://t.me/shine180724" target="_blank" class="text-teal-500 hover:underline"><i class="fa-brands fa-telegram mr-1"></i>https://t.me/shine180724</a>
     </footer>
 
     <script>
         let calculatedItems = [];
         let activeFormat = 'simple'; // 'simple' or 'profit'
+
+        // Load Saved API key on startup
+        window.onload = function() {
+            const savedKey = localStorage.getItem("user_gemini_api_key");
+            if (savedKey) {
+                document.getElementById("userApiKey").value = savedKey;
+                document.getElementById("keyStatus").classList.remove("hidden");
+            }
+        };
+
+        // Save API key safely in local storage
+        function saveApiKey() {
+            const keyInput = document.getElementById("userApiKey").value.trim();
+            if (keyInput) {
+                localStorage.setItem("user_gemini_api_key", keyInput);
+                document.getElementById("keyStatus").classList.remove("hidden");
+                showToast("Gemini API Key ကို အောင်မြင်စွာ သိမ်းဆည်းလိုက်ပါပြီ။");
+            } else {
+                localStorage.removeItem("user_gemini_api_key");
+                document.getElementById("keyStatus").classList.add("hidden");
+                showToast("API Key ကို ဖျက်သိမ်းလိုက်ပါပြီ။", true);
+            }
+        }
 
         // Utility to adjust rate using buttons (+ / -)
         function adjustRate(inputId, delta) {
@@ -451,7 +502,12 @@
 
         // Reusable Gemini API Call with Exponential Backoff
         async function callGemini(prompt, systemInstruction = "") {
-            const apiKey = ""; // Set dynamically by the host platform at runtime
+            // Read key dynamically from user setup panel
+            const apiKey = document.getElementById("userApiKey").value.trim();
+            if (!apiKey) {
+                throw new Error("ကျေးဇူးပြု၍ ထိပ်ဆုံးရှိ Setup ဘောက်စ်တွင် သင်၏ Gemini API Key ကို ရိုက်ထည့်ပြီး Save ပေးပါဦးခင်ဗျာ။");
+            }
+            
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             
             const payload = {
@@ -459,7 +515,7 @@
             };
             
             if (systemInstruction) {
-                payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+                payload.systemInstruction = { parts: [{ text: systemPrompt }] };
             }
 
             let delay = 1000;
@@ -474,14 +530,21 @@
                     if (response.ok) {
                         const result = await response.json();
                         return result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    } else {
+                        const errorRes = await response.json();
+                        if (errorRes.error?.message) {
+                            throw new Error("Gemini Error: " + errorRes.error.message);
+                        }
                     }
                 } catch (e) {
-                    // Do not log to console as per rules, let retry continue
+                    if (e.message.includes("Gemini Error")) {
+                        throw e; // API configuration or key errors shouldn't be retried
+                    }
                 }
                 await new Promise(resolve => setTimeout(resolve, delay));
                 delay *= 2;
             }
-            throw new Error("ချိတ်ဆက်မှု မအောင်မြင်ပါ။ နောက်မှ ပြန်လည်ကြိုးစားပါ။");
+            throw new Error("ချိတ်ဆက်မှု မအောင်မြင်ပါ။ API Key မှားယွင်းနေခြင်း သို့မဟုတ် အင်တာနက် အဆက်အသွယ် ပြတ်တောက်နေခြင်း ဖြစ်နိုင်ပါသည်။");
         }
 
         // Gemini Feature 1: Clean/Parse complex, messy text lists
@@ -504,7 +567,7 @@ ${rawText}`;
                 const cleanedText = await callGemini(userPrompt, systemPrompt);
                 if (cleanedText && cleanedText.trim()) {
                     document.getElementById("rawInput").value = cleanedText.trim();
-                    processInput(); // Re-trigger the calculations
+                    processInput(); // Re-trigger calculations
                     showToast("စာသားများကို AI အကူအညီဖြင့် အောင်မြင်စွာ ပြောင်းလဲပေးလိုက်ပါပြီ!");
                 } else {
                     showToast("စာသားများကို AI မှ မဖတ်ရှုနိုင်ပါ။", true);
@@ -545,7 +608,7 @@ CRITICAL DIRECTIONS:
 5. Emphasize fast transaction speed and 100% safety.`;
 
             const userPrompt = `Write a beautiful Burmese promotional/sales post with these prices. Use the style: ${toneDescription}.
-At the end of the post, mention this contact link: https://t.me/Toji222005
+At the end of the post, mention this contact link: https://t.me/shine180724
 
 Here is the price list to use:
 ${itemsString}`;
