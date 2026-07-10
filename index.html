@@ -508,8 +508,8 @@
                 throw new Error("ကျေးဇူးပြု၍ ထိပ်ဆုံးရှိ Setup ဘောက်စ်တွင် သင်၏ Gemini API Key ကို ရိုက်ထည့်ပြီး Save ပေးပါဦးခင်ဗျာ။");
             }
             
-            // FIXED: Changed deprecated preview model to stable gemini-3.5-flash
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`;
+            // FIXED: Changed deprecated preview model to stable gemini-3.1-flash-lite
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`;
             
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }]
